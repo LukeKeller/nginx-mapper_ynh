@@ -37,6 +37,12 @@ function h($s): string {
     return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+// Byte-length truncation with an ellipsis. Avoids mb_* so the app needs no
+// mbstring extension; htmlspecialchars(ENT_SUBSTITUTE) cleans any cut sequence.
+function clip(string $s, int $max): string {
+    return strlen($s) <= $max ? $s : substr($s, 0, $max) . '…';
+}
+
 // =============================================================================
 // GeoIP database refresh (DB-IP City Lite — free, monthly, no licence key)
 // =============================================================================
@@ -467,7 +473,7 @@ function fmt_bytes(int $n): string {
             <?php foreach ($uaCounts as $ua => $count): ?>
               <div class="bar">
                 <div class="meta">
-                  <span class="ua" title="<?= h($ua) ?>"><?= h(mb_strimwidth($ua, 0, 90, '…')) ?></span>
+                  <span class="ua" title="<?= h($ua) ?>"><?= h(clip($ua, 90)) ?></span>
                   <span class="c"><?= number_format($count) ?></span>
                 </div>
                 <div class="track"><div class="fill" style="width: <?= $uaMax ? round($count / $uaMax * 100, 1) : 0 ?>%"></div></div>
