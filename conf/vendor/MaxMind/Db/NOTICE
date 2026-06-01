@@ -1,0 +1,9 @@
+This directory vendors the MaxMind DB Reader for PHP.
+
+  Project: maxmind-db/reader (MaxMind-DB-Reader-php)
+  Source:  https://github.com/maxmind/MaxMind-DB-Reader-php
+  License: Apache-2.0 (see ./LICENSE)
+
+Only the pure-PHP reader is bundled (no C extension required). It is used to
+read DB-IP / MaxMind .mmdb databases for IP geolocation. No MaxMind data is
+included; the GeoIP database is downloaded separately from DB-IP at runtime.

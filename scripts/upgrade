@@ -1,0 +1,49 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# UPDATE APP FILES
+#=================================================
+ynh_script_progression --message="Updating the dashboard and GeoIP reader..." --weight=1
+
+ynh_add_config --template="index.php" --destination="$install_dir/index.php"
+
+ynh_secure_remove --file="$install_dir/vendor"
+cp -r ../conf/vendor "$install_dir/vendor"
+
+# nginx (www-data) must be able to traverse the install dir to stat index.php.
+chown -R "$app:www-data" "$install_dir"
+
+#=================================================
+# ENSURE LOG ACCESS
+#=================================================
+ynh_script_progression --message="Ensuring access to the nginx logs..." --weight=1
+
+grant_log_access
+
+#=================================================
+# SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Updating system configurations related to $app..." --weight=1
+
+ynh_add_fpm_config
+ynh_add_nginx_config
+
+ynh_add_config --template="cron" --destination="/etc/cron.d/$app"
+
+ynh_systemd_action --service_name="php$phpversion-fpm" --action=restart
+
+#=================================================
+# ENSURE THE GEOIP DATABASE EXISTS
+#=================================================
+if [ ! -e "$mmdb_path" ]; then
+    ynh_script_progression --message="Downloading the GeoIP database..." --weight=5
+    refresh_mmdb_now
+fi
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+ynh_script_progression --message="Upgrade of $app completed" --last

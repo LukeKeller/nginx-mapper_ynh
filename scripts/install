@@ -1,0 +1,48 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# DEPLOY APP FILES
+#=================================================
+ynh_script_progression --message="Deploying the dashboard and GeoIP reader..." --weight=1
+
+ynh_add_config --template="index.php" --destination="$install_dir/index.php"
+cp -r ../conf/vendor "$install_dir/vendor"
+
+# nginx (www-data) must be able to traverse the install dir to stat index.php.
+chown -R "$app:www-data" "$install_dir"
+
+#=================================================
+# GRANT READ ACCESS TO NGINX LOGS
+#=================================================
+ynh_script_progression --message="Granting access to the nginx logs..." --weight=1
+
+grant_log_access
+
+#=================================================
+# SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+
+ynh_add_fpm_config
+ynh_add_nginx_config
+
+ynh_add_config --template="cron" --destination="/etc/cron.d/$app"
+
+# Restart (not reload) php-fpm so the pool worker picks up the new 'adm'
+# supplementary group and can read /var/log/nginx.
+ynh_systemd_action --service_name="php$phpversion-fpm" --action=restart
+
+#=================================================
+# DOWNLOAD THE GEOIP DATABASE
+#=================================================
+ynh_script_progression --message="Downloading the GeoIP database (this can take a minute)..." --weight=5
+
+refresh_mmdb_now
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+ynh_script_progression --message="Installation of $app completed" --last

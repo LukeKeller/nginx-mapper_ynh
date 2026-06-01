@@ -1,0 +1,4 @@
+# Refresh the DB-IP City Lite GeoIP database monthly (DB-IP publishes a new
+# build at the start of each month). Runs as the app user so it can write to
+# the data dir, reusing the same code path as the in-app "Refresh" button.
+12 4 1 * * __APP__ php__PHPVERSION__ __INSTALL_DIR__/index.php refresh >/dev/null 2>&1

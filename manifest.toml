@@ -1,0 +1,52 @@
+packaging_format = 2
+
+id = "nginx_mapper"
+name = "Nginx Mapper"
+description.en = "Maps the geographic origin of all nginx traffic and charts user-agents, using a refreshable GeoIP database"
+
+version = "1.0~ynh1"
+
+maintainers = ["Luke"]
+
+[upstream]
+license = "AGPL-3.0-or-later"
+website = "https://nginx-map.p10.club"
+# GeoIP data: DB-IP Lite (CC-BY-4.0), https://db-ip.com/db/download/ip-to-city-lite
+# IP lookups use the MaxMind DB Reader (Apache-2.0), vendored under conf/vendor.
+
+[integration]
+yunohost = ">= 11.2"
+architectures = "all"
+multi_instance = false
+ldap = false
+sso = true
+disk = "400M"
+ram.build = "50M"
+ram.runtime = "128M"
+
+[install]
+    [install.domain]
+    type = "domain"
+
+    [install.path]
+    type = "path"
+    default = "/"
+
+    [install.init_main_permission]
+    help.en = "This dashboard exposes traffic data for the whole server, so keep it restricted to 'admins'. It is not meant to be public."
+    type = "group"
+    default = "admins"
+
+[resources]
+    [resources.system_user]
+
+    [resources.install_dir]
+    group = "www-data:r-x"
+
+    [resources.data_dir]
+
+    [resources.permissions]
+    main.url = "/"
+
+    [resources.apt]
+    packages = "php8.2-fpm, php8.2-curl"
